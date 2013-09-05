@@ -1,0 +1,17 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'eclipse'
+
+sourceCompatibility = 1.7
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  compile 'junit:junit:4.11'
+  compile 'org.hamcrest:hamcrest-all:1.3'
+}
+
+version = '1.0-SNAPSHOT'
+group = 'com.bspyrkos.range-merge'
