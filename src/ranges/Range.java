@@ -44,7 +44,15 @@ public class Range {
     return this.upper > that.lower;
   }
 
-  Range plus(Range nextRange) {
-    return new Range(lower, nextRange.upper);
+  boolean contains(Range that) {
+    return this.upper > that.upper;
+  }
+
+  Range plus(Range that) {
+    if (this.contains(that)) {
+      return this;
+    } else {
+      return new Range(this.lower, that.upper);
+    }
   }
 }

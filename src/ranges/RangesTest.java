@@ -36,18 +36,36 @@ public class RangesTest {
   }
 
   @Test
-  public void overlappingRanges_areMergedAndReturnedWithDetachedRanges()
-      throws Exception {
-    assertThat(join(range(1, 3), range(2, 4), range(5, 6)),
-        contains(range(1, 4), range(5, 6)));
-  }
-
-  @Test
   public void threeOverlappingRanges_areMergedToOne() throws Exception {
     assertThat(join(range(1, 3), range(2, 5), range(4, 6)),
         contains(range(1, 6)));
   }
 
+  @Test
+  public void detachedRangeAfterOverlappingRanges_isIncludedInResult()
+      throws Exception {
+    assertThat(join(range(1, 3), range(2, 5), range(6, 7)),
+        contains(range(1, 5), range(6, 7)));
+  }
+
+  @Test
+  public void detachedRangeBeforeOverlappingRanges_isIncludedInResult()
+      throws Exception {
+    assertThat(join(range(1, 2), range(2, 5), range(4, 7)),
+        contains(range(1, 2), range(2, 7)));
+  }
+
+  @Test
+  public void twoSetsOfOverlappingResults_areMergedIntoTwoDetachedRanges()
+      throws Exception {
+    assertThat(join(range(1, 3), range(2, 5), range(6, 8), range(7, 9)),
+        contains(range(1, 5), range(6, 9)));
+  }
+
+  @Test
+  public void rangeContainsSmaller_producesLargerRange() throws Exception {
+    assertThat(join(range(1, 6), range(2, 3)), contains(range(1, 6)));
+  }
   private List<Range> join(Range... r) {
     return joinRanges(Arrays.asList(r));
   }
@@ -60,24 +78,24 @@ public class RangesTest {
     return Collections.<Range> emptyList();
   }
 
-  private List<Range> joinRanges(List<Range> ranges) {
+  public List<Range> joinRanges(List<Range> ranges) {
     if (ranges == null || ranges.isEmpty())
       return Collections.emptyList();
 
-    ArrayList<Range> joinedRanges = new ArrayList<>();
+    ArrayList<Range> detachedRanges = new ArrayList<>();
 
-    for (int i = 0; i < ranges.size() - 1; i++) {
+    Range previousRange = ranges.get(0);
+
+    for (int i = 1; i < ranges.size(); i++) {
       Range currentRange = ranges.get(i);
-      Range nextRange = ranges.get(i + 1);
-      if (currentRange.intersects(nextRange)) {
-        ranges.set(i + 1, currentRange.plus(nextRange));
+      if (previousRange.intersects(currentRange)) {
+        previousRange = previousRange.plus(currentRange);
       } else {
-        joinedRanges.add(currentRange);
+        detachedRanges.add(previousRange);
+        previousRange = currentRange;
       }
     }
-    joinedRanges.add(ranges.get(ranges.size() - 1));
-
-    return joinedRanges;
+    detachedRanges.add(previousRange);
+    return detachedRanges;
   }
-
 }
